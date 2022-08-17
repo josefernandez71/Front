@@ -1,12 +1,28 @@
 import {Outlet,Link,useNavigate} from "react-router-dom";
 import React,{useCallback} from "react";
 import '../styles/layout.scss';
-
+const API=process.env.REACT_APP_BACKEND;
 
 const Layout = () =>{
     const Navigate = useNavigate();
     const logOUT = useCallback(() => Navigate('/',{replace:true}),[Navigate]);
-
+    const logout=async(e)=>{
+        e.preventDefault();
+        const res=await fetch(`${API}/logout`,{})
+        if(res){
+          if(sessionStorage.getItem('user') != null){
+            console.log(sessionStorage.getItem('user'));
+            sessionStorage.removeItem('user');
+            console.log(sessionStorage.getItem('user'));
+            logOUT();
+          }else{
+            logOUT();
+          }
+        }else{
+          console.log('false');
+        }
+        
+      }
     return(
         <>
         <div id="menu">
@@ -25,7 +41,7 @@ const Layout = () =>{
             <h2>Juan José Fernández Ruiz</h2>
             <ul>
                 <li>Perfil</li>
-                <li onClick={logOUT}>Out</li>
+                <li onClick={logout}>Out</li>
             </ul>
         </div>
             <Outlet/>

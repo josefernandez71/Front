@@ -1,21 +1,59 @@
-import React ,{useCallback, useState} from 'react';
+import React ,{useCallback, useState,useEffect} from 'react';
 import { CircularProgressbar,buildStyles } from 'react-circular-progressbar';
 import Statebtn from '../Component/statebtn';
 import { useNavigate } from 'react-router-dom';
-import { easeQuadInOut } from "d3-ease";
-import AnimatedProgressProvider from "../Component/AnimatedProgressProvider";
-import ChangingProgressProvider from "../Component/ChangingProgressProvier";
-import '../styles/states.scss'
+import '../styles/states.scss';
+//<script src="/socket.io/socket.io.js"></script>
+const API =process.env.REACT_APP_BACKENT
 
 export default function States() {
+//  const io = require("socket.io-client");
   const btt=document.querySelectorAll('.btns');
-
-  const percentage = 66;
   const Navigate = useNavigate();
   const logOUT = useCallback(() => Navigate('/',{replace:true}),[Navigate]);
-  return (
+  const [Response,setdate]=useState("");
+  const [bool,setbool]=useState("");
+//const socket = useContext(SocketContext);
+  const logout=async(e)=>{
+    e.preventDefault();
+    const res=await fetch(`${API}/logout`,{})
+    if(res){
+      if(sessionStorage.getItem('user') != null){
+        console.log(sessionStorage.getItem('user'));
+        sessionStorage.removeItem('user');
+        console.log(sessionStorage.getItem('user'));
+        logOUT();
+      }else{
+        logOUT();
+      }
+    }else{
+      console.log('false');
+    }
     
-    <div id="contall">
+  }
+  
+  const pedirdatos=async()=>{
+    const res= await fetch(`${API}/estados/menu`,{
+      method: "POST",
+      headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+      },
+      body:JSON.stringify({
+          user:sessionStorage.getItem('user')
+      })
+    })
+    const response= await res.json();
+    setdate(response);
+  }
+  useEffect(()=>{
+    pedirdatos();
+  },[])
+ 
+  
+
+  return (
+    <div id="contall"> 
       <div id="PerfilUsers">
         <div id="infoUserS">
           <p id="imaUserS"></p>
@@ -27,42 +65,27 @@ export default function States() {
           <div id='BTNS-Option'>
             <button id='PerfilU'></button>
             <button id='Options'></button>
-            <button id='Out' onClick={logOUT}></button>
+            <button id='Out' onClick={logout}></button>
           </div>  
         </div>
       </div>
-
         <div id="PanelState">
           <div id="state">
           
-            <h1 id="demo" >Log Out</h1>
-            <div id="crono">       
-              <ChangingProgressProvider values={["01:01","00:02","00:03","00:04","00:05"]}>
-                {percentage => (
-                <CircularProgressbar
-                  value={percentage}
-                  text={`${percentage}`}
-                  styles={buildStyles({
-                    rotation: 0.25,
-                    strokeLinecap: 'butt',
-                    textSize: '100%',
-                    pathTransitionDuration: 1,
-                    pathColor: `rgba(62, 152, 199, ${percentage / 60})`,
-                    textColor: '#f88',
-                    trailColor: '#d6d6d6',
-                    backgroundColor: '#3e98c7',
-                  })}/>
-                )}
-              </ChangingProgressProvider>
-            </div>
+            <h1 id="demo">Log out</h1>
+            <div id="crono">  
+              <div className='cronometro'>
+                <p id="hms">00:00:00</p>
+              </div> 
+            </div> 
           </div>
 
           <div id='selectorState'>
-            <Statebtn/>
+            <Statebtn response={Response}/>
           </div>
         </div>
         
     </div>
+  
   )
-}
-
+  }
